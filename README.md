@@ -51,7 +51,7 @@ Worker configuration lives in `src/config/index.ts`.
 
 `pending` jobs are waiting to be claimed. A worker moves an eligible job to `processing`, then sends the confirmation. A successful send moves it to `succeeded`.
 
-If delivery fails, the worker stores the error, increments `attempts`, and moves the job to `failed` with an exponential retry time. `failed` means retries remain. When attempts are exhausted, the job becomes `dead`, records `finishedAt`, and requires human attention. The worker sweep treats a job left in `processing` beyond the timeout as a failed attempt: it resets it to run immediately, or marks it dead when that was the final attempt.
+If delivery fails, the worker stores the error, increments `attempts`, and moves the job to `failed` with an exponential retry time. `failed` means an attempt failed and the job is waiting for its next run with backoff. When attempts are exhausted, the job becomes `dead`, records `finishedAt`, and requires human attention. The worker sweep treats a job left in `processing` beyond the timeout as a failed attempt: it resets it to run immediately, or marks it dead when that was the final attempt.
 
 ## Design decisions
 
@@ -99,9 +99,17 @@ I let a job exhaust its attempts, then checked the stored row and the status cou
 
 ### Dead-letter view and retry
 
-I opened the jobs screen with dead jobs present and inspected the dead-letter view. The evidence shows the dead-job presentation and the available retry action.
+The jobs screen shows the dead-letter table and its status badges.
 
 ![Dead-letter view](docs/evidence/dead-letter-view.png)
+
+The table visibly includes dead rows and a pending row with attempts shown as `5/5`.
+
+![Dead-letter retry](docs/evidence/dead-letter-retry.png)
+
+The table visibly includes dead rows and a processing row with attempts shown in the table.
+
+![Dead-letter retry working](docs/evidence/dead-letter-retry-working.png)
 
 ### Kill and sweep recovery
 
@@ -129,7 +137,11 @@ I ran two workers against the same queue and compared their logs and attempt cou
 
 ## Dead-letter view
 
-The `/jobs` screen has an all-jobs view and a `Dead letters` filter backed by `GET /api/jobs?status=dead`. Selecting a row opens its payload and `lastError` detail. The `Retry` button is rendered only when the selected job is dead; it calls `POST /api/jobs/:id/retry`, which resets that job to pending for immediate processing. These behaviors are implemented in `src/components/JobsTable.tsx` and the retry route.
+The `/jobs` screen has an all-jobs view and a `Dead letters` filter backed by `GET /api/jobs?status=dead`. Selecting a row opens a modal with its payload, `lastError`, attempts, and timestamps. The `Retry` button is rendered only when the selected job is dead; it calls `POST /api/jobs/:id/retry`, which puts the job back to `pending` and keeps its attempts count. A retried job that fails again therefore ends at `6/5`. This is intended, so the history of the original five attempts stays visible. These behaviors are implemented in `src/components/JobsTable.tsx` and the retry route.
+
+## Screens
+
+The signup screen is at `/`. The job status and dead-letter screen is at `/jobs`. The local design references are not linked from the application.
 
 ## What went wrong
 
