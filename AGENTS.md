@@ -18,7 +18,8 @@ depends on it.
 - UI: two screens only. The waitlist signup screen (/) matches 
   design-reference/waitlist-signup.png and waitlist-joined.png. It is 
   the signup form, not a separate landing page. The /jobs screen stays 
-  functional and plain but uses the same fonts, colours and spacing. 
+  functional and plain but uses the same fonts, colours and spacing; job 
+  detail opens as a modal. 
   No nav, no auth, no other pages. Design references are local only 
   and must never be committed.
 - Every tunable value (concurrency cap, max attempts, backoff base 
@@ -42,8 +43,9 @@ depends on it.
   creating a second one
 - createdAt, updatedAt
 
-failed and dead are different states. failed means it will retry. 
-dead means retries are exhausted and a human must look at it.
+failed and dead are different states. failed means an attempt failed and 
+the job is waiting for its next run with backoff. dead means retries are 
+exhausted and a person must look at it.
 
 ## Enqueue path
 POST /api/waitlist, body { email }.
@@ -85,6 +87,9 @@ the Next.js server) that loops:
    otherwise it remains pending for retry. This recovers from a worker 
    crashing mid-job.
 
+Testing-only worker variables are WORKER_TEST_DELAY_MS, 
+STUCK_JOB_TIMEOUT_MS and STUCK_JOB_SWEEP_INTERVAL_MS.
+
 ## API endpoints
 - POST /api/waitlist — enqueue, described above
 - GET /api/jobs — list all jobs, newest first, for the status screen. 
@@ -105,8 +110,9 @@ the Next.js server) that loops:
    the UI copy). Error state for invalid email format.
 2. Jobs status (/jobs) — table of all jobs: id, status badge, 
    attempts, createdAt, runAt. A filter/tab to isolate dead jobs. 
-   Clicking a row expands or opens a detail panel showing payload and 
-   lastError. A "Retry" button appears only on dead jobs and calls 
+   Clicking a row opens a modal detail view showing payload, lastError, 
+   attempts and timestamps. The modal closes with its X, Escape, or an 
+   outside-card click. A "Retry" button appears only on dead jobs and calls 
    POST /api/jobs/:id/retry, then refetches the list.
 
 ## Commit discipline
