@@ -9,6 +9,7 @@
     "lint": "tsc --noEmit",
     "worker": "tsx --env-file=.env src/worker/index.ts",
     "seed:burst": "node scripts/seed-burst.mjs",
+    "check:claim-tz": "tsx --env-file=.env scripts/check-claim-timezone.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
