@@ -20,6 +20,7 @@ export function newJobId() {
 }
 
 export async function reclaimStuckJobs() {
+  // Date is an absolute UTC instant; Prisma binds it against the UTC wall-clock column value.
   const cutoff = new Date(Date.now() - config.worker.stuckJobTimeoutMs);
   const stuckJobs = await prisma.job.findMany({
     where: { status: "processing", startedAt: { lt: cutoff } },
@@ -53,10 +54,12 @@ export async function reclaimStuckJobs() {
 
 export async function claimJob() {
   const rows = await prisma.$queryRaw<Array<{ id: string }>>`
-    UPDATE "Job" SET status = 'processing'::"JobStatus", "startedAt" = NOW(), "updatedAt" = NOW()
+    -- Job timestamps are UTC wall-clock values in timestamp without time zone columns.
+    UPDATE "Job" SET status = 'processing'::"JobStatus", "startedAt" = (NOW() AT TIME ZONE 'UTC'), "updatedAt" = (NOW() AT TIME ZONE 'UTC')
     WHERE id = (
       SELECT id FROM "Job"
-      WHERE (status = 'pending'::"JobStatus" OR status = 'failed'::"JobStatus") AND "runAt" <= NOW()
+      -- Compare the stored UTC wall-clock value to the UTC wall-clock value from the database.
+      WHERE (status = 'pending'::"JobStatus" OR status = 'failed'::"JobStatus") AND "runAt" <= (NOW() AT TIME ZONE 'UTC')
       ORDER BY "runAt" ASC, "createdAt" ASC
       FOR UPDATE SKIP LOCKED LIMIT 1
     )

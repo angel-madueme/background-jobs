@@ -8,6 +8,8 @@ is a standalone project, unrelated to any other repo. No live product
 depends on it.
 
 ## Non-negotiable rules
+- Timestamps are UTC without time zone, so raw SQL must compare against 
+  (NOW() AT TIME ZONE 'UTC').
 - Stack: Next.js (App Router), TypeScript, Prisma, PostgreSQL (local, 
   not hosted — no cold-start handling needed).
 - Email delivery: Resend's real API (RESEND_API_KEY from env). Never 
