@@ -15,9 +15,12 @@ depends on it.
 - Email delivery: Resend's real API (RESEND_API_KEY from env). Never 
   mock or simulate the send — the whole point is testing a real, 
   unreliable external call.
-- No UI beyond two screens: the waitlist signup form, and the jobs 
-  status/dead-letter view. No landing page, no nav, no auth, no 
-  styling investment beyond basic Tailwind.
+- UI: two screens only. The waitlist signup screen (/) matches 
+  design-reference/waitlist-signup.png and waitlist-joined.png. It is 
+  the signup form, not a separate landing page. The /jobs screen stays 
+  functional and plain but uses the same fonts, colours and spacing. 
+  No nav, no auth, no other pages. Design references are local only 
+  and must never be committed.
 - Every tunable value (concurrency cap, max attempts, backoff base 
   delay, stuck-job timeout) lives in src/config, never hardcoded in a 
   handler or the worker loop.

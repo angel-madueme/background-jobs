@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
 :root { color-scheme: light; }
-body { margin: 0; background: #f8fafc; color: #0f172a; font-family: Arial, sans-serif; }
+body { margin: 0; background: #fffaf8; color: #101218; font-family: var(--font-jakarta), Arial, sans-serif; }
 * { box-sizing: border-box; }
+.page-shell { position: relative; isolation: isolate; overflow: hidden; background: radial-gradient(circle at 8% 88%, rgba(255, 181, 134, 0.3), transparent 31%), radial-gradient(circle at 95% 20%, rgba(255, 176, 191, 0.24), transparent 34%), linear-gradient(135deg, #fff 0%, #fffaf8 52%, #fff2f1 100%); }
+.page-shell::before, .page-shell::after { position: absolute; z-index: -1; content: ""; pointer-events: none; border: 1px solid rgba(255, 151, 155, 0.15); border-radius: 50%; }
+.page-shell::before { width: 850px; height: 850px; top: -360px; right: -280px; box-shadow: 0 0 0 22px rgba(255, 151, 155, 0.04), 0 0 0 44px rgba(255, 151, 155, 0.035), 0 0 0 66px rgba(255, 151, 155, 0.03), 0 0 0 88px rgba(255, 151, 155, 0.025); }
+.page-shell::after { width: 690px; height: 690px; bottom: -400px; left: -300px; box-shadow: 0 0 0 22px rgba(255, 177, 132, 0.04), 0 0 0 44px rgba(255, 177, 132, 0.035), 0 0 0 66px rgba(255, 177, 132, 0.03); }
